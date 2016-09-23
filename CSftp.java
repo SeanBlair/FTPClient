@@ -35,18 +35,18 @@ public class CSftp
 
         try {
         	Socket mySocket = new Socket(hostName, portNumber);
-        	PrintWriter out = new PrintWriter(mySocket.getOutputStream(), true);
-        	BufferedReader in = new BufferedReader(
+        	PrintWriter toServer = new PrintWriter(mySocket.getOutputStream(), true);  //socketOutputStream   (to FTP server)
+        	BufferedReader toMe = new BufferedReader(                               // socketInputStream	(from FTP server
                     new InputStreamReader(mySocket.getInputStream()));
         
         	
-            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));  // consoleImputStream   
             
                 String fromServer;
                 String fromUser;
 
-                while ((fromServer = in.readLine()) != null) {
-                    System.out.println("Server: " + fromServer);
+                while ((fromServer = in.readLine()) != null) {       // not sufficient , sometimes responses are more than one line.
+                    System.out.println("Server: " + fromServer);     // need to iterate through lines, read response codes, then exit.
                     if (fromServer.equals("Bye."))
                         break;
                     
@@ -78,7 +78,7 @@ public class CSftp
                 command.echoToTerminal();
                 
 
-//				System.out.println("900 Invalid command.");
+				System.out.println("900 Invalid command.");
             }
             
         }  catch (UnknownHostException exception) {
@@ -87,6 +87,10 @@ public class CSftp
             System.err.println("998 Input error while reading commands, terminating.");
         }
     }   
+
+    
+    
+    
 }
 
 
