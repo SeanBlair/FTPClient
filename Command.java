@@ -1,5 +1,5 @@
 /**
- * Parse user input command and arguments into String(s) and handle the result
+ * Parse user input command and arguments into String(s)
  */
 public class Command {
 
