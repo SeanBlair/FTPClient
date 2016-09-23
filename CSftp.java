@@ -1,6 +1,6 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+//import java.io.IOException;
+import java.io.*;
+import java.net.*;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -18,7 +18,7 @@ public class CSftp
     static final int MAX_LEN = 255;
     static final int ARG_CNT = 2;
 
-    public static void main(String [] args) {
+    public static void main(String [] args) throws IOException {
         byte cmdString[] = new byte[MAX_LEN];
 
         // Get command line arguments and connect to FTP
@@ -34,10 +34,39 @@ public class CSftp
         int portNumber = Integer.parseInt(args[1]);
 
         try {
-        	
         	Socket mySocket = new Socket(hostName, portNumber);
-        	PrintWriter toFtpServer = new PrintWriter(mySocket.getOutputStream(), true);  
-        	BufferedReader fromFtpServer = new BufferedReader(new InputStreamReader(mySocket.getInputStream()));
+        	PrintWriter out = new PrintWriter(mySocket.getOutputStream(), true);
+        	BufferedReader in = new BufferedReader(
+                    new InputStreamReader(mySocket.getInputStream()));
+        
+        	
+            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+            
+                String fromServer;
+                String fromUser;
+
+                while ((fromServer = in.readLine()) != null) {
+                    System.out.println("Server: " + fromServer);
+                    if (fromServer.equals("Bye."))
+                        break;
+                    
+                    fromUser = stdIn.readLine();
+                    if (fromUser != null) {
+                        System.out.println("Client: " + fromUser);
+                        
+                        if (fromUser.contains("user"))
+                        {
+                        	out.println("USER " + fromUser.substring(5));
+                        }else if (fromUser.contains("pw"))
+                        {
+                        	out.println("PASS " + fromUser.substring(5));
+                        }else if (fromUser.contains("quit"))
+                        {
+                        	return;
+                        }
+                        //out.println(fromUser);
+                    }
+                }
         	
             for (int len = 1; len > 0;) {
                 System.out.print("csftp> ");
@@ -47,6 +76,7 @@ public class CSftp
                 // Start processing the command here.
                 Command command = new Command(cmdString);
                 command.echoToTerminal();
+                
 
 //				System.out.println("900 Invalid command.");
             }
