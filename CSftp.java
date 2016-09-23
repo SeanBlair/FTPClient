@@ -48,13 +48,14 @@ public class CSftp
                 Command command = new Command(cmdString);
                 command.echoToTerminal();
 
-//				System.out.println("900 Invalid command.");
             }
             
         }  catch (UnknownHostException exception) {
         	System.err.println("Unknown host!!!");
         }  catch (IOException exception) {
             System.err.println("998 Input error while reading commands, terminating.");
+        } catch (IllegalArgumentException exception) {
+				System.out.println("900 Invalid command.");
         }
     }   
 }
