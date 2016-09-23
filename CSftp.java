@@ -13,8 +13,6 @@ public class CSftp
     static final int MAX_LEN = 255;
     static final int ARG_CNT = 2;
 
-    static final String PW = "pw";
-
     public static void main(String [] args) {
         byte cmdString[] = new byte[MAX_LEN];
 
