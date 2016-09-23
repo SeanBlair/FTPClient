@@ -34,22 +34,12 @@ public class CSftp
                 // Start processing the command here.
                 Command command = new Command(cmdString);
                 command.echoToTerminal();
-//                StringBuffer buffer = new StringBuffer();
-//                for (int i = 0; i < cmdString.length; i++) {
-//                    // get all characters up to newline
-//                    if (cmdString[i] == ('\n')) {
-//                        break;
-//                    }
-//                    buffer.append((char) cmdString[i]);
-//                }
-//                if (!(buffer.length() == 0 || buffer.charAt(0) == '#')) {
-//                    System.out.println(buffer.toString());
-//                }
 
-//				System.out.println("900 Invalid command.");
             }
         } catch (IOException exception) {
             System.err.println("998 Input error while reading commands, terminating.");
+        } catch (IllegalArgumentException exception) {
+				System.out.println("900 Invalid command.");
         }
     }
 }

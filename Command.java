@@ -5,12 +5,36 @@ public class Command {
 
     private String fullCommand;
     private String command;
-    private String arguments;
+    private String argument;
 
     public Command(byte[] byteArray) {
-        this.fullCommand = parseByteArray(byteArray);
+        setFullCommand(byteArray);
+
+        String[] commandParts = splitFullCommand();
+        // TODO validate the command format and notify user if there were too many arguments, or other problems
+        this.command = commandParts[0];
+        if (commandParts.length > 1) {
+            this.argument = commandParts[1];
+        } else {
+            this.argument = null;
+        }
     }
 
+    /**
+     * Split command into an array on whitespace and trim each part
+     */
+    public String[] splitFullCommand() {
+        String[] commandParts = fullCommand.split("\\s+");
+
+        for (String str : commandParts) {
+            trimAll(str);
+        }
+        return commandParts;
+    }
+
+    /**
+     * If command should not silently return, print it to the terminal
+     */
     public void echoToTerminal() {
         if (!isSilentReturn()) {
             System.out.println(fullCommand);
@@ -26,14 +50,25 @@ public class Command {
             }
             buffer.append((char) byteArray[i]);
         }
-        return buffer.toString();
+        return trimAll(buffer.toString());
     }
 
+    /**
+     * @return true if the command is the newline char or begins with '#'
+     */
     private boolean isSilentReturn() {
         return (fullCommand.length() == 0 || fullCommand.charAt(0) == '#');
     }
 
+    /**
+     * Removes tabs and leading/trailing whitespace from the given string
+     */
+    private String trimAll(String string) {
+        return string.replaceAll("\t", "").trim();
+    }
+
     // *********** Getters and Setters **********
+
     public String getFullCommand() {
         return fullCommand;
     }
@@ -43,12 +78,10 @@ public class Command {
     }
 
     public String getCommand() {
-        // TODO
-        return null;
+        return command;
     }
 
     public String getArguments() {
-        // TODO
-        return null;
+        return argument;
     }
 }
