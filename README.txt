@@ -1,3 +1,1 @@
-
-Put any comments for the markers in this file. If you don't have any comments you can delete the file from your repo.
-
+This is a simple TCP client implemented by Laura Barton (n4v9a) and Sean Blair (o5v9a) for Assignment 1 of CPSC 317 2016W1.
