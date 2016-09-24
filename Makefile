@@ -1,6 +1,8 @@
 all: CSftp.jar
 CSftp.jar: CSftp.java
 	javac CSftp.java
+	javac Command.java
+	javac FtpHandler.java
 	jar cvfe CSftp.jar CSftp *.class
 
 

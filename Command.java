@@ -43,7 +43,7 @@ public class Command {
             }
             buffer.append((char) byteArray[i]);
         }
-        return trimAll(buffer.toString());
+        return trimAll(buffer.toString().toLowerCase());
     }
 
     /**
