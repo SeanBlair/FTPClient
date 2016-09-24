@@ -36,7 +36,7 @@ public class CSftp
         try {
         	Socket mySocket = new Socket(hostName, portNumber);
         	PrintWriter toFtpServer = new PrintWriter(mySocket.getOutputStream(), true);  //socketOutputStream   (to FTP server)
-        	BufferedReader formFtpServer = new BufferedReader(                               // socketInputStream	(from FTP server
+        	BufferedReader fromFtpServer = new BufferedReader(                               // socketInputStream	(from FTP server
                     new InputStreamReader(mySocket.getInputStream()));
                 	
             BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));  // consoleImputStream   
@@ -45,47 +45,55 @@ public class CSftp
                 Command userCommand;
                 String userString;
                 Boolean continueLoop = true;
+                Boolean readServerResponse = true;
                 
-                
-
-                while ((fromServer = formFtpServer.readLine()) != null) {       // not sufficient , sometimes responses are more than one line.
-                    System.out.println("<-- " + fromServer);                    // need to iterate through lines, read response codes, then exit.
-                    System.out.println("csftp> ");
+                while (continueLoop) {
+                	if (readServerResponse) {
+                	//if ((fromServer = fromFtpServer.readLine()) != null){
+                		fromServer = fromFtpServer.readLine(); 
+                		System.out.println("<-- " + fromServer);                    // need to iterate through lines, read response codes, then exit.
+                	}
+                	System.out.println("csftp> ");
                     
-                    //fromUser = consoleInput.readLine();
+                	
+                         //fromUser = consoleInput.readLine();
                     userString = consoleInput.readLine();
-                    if (userString != null){
-                    	
-                    	userCommand = new Command(userString.getBytes());
-                    	String commandString;
-                        if (userCommand.getCommand().equals("user")){
-                        	if (userCommand.getArguments() == null){
-                        		System.out.println("901 Incorrect number of arguments");
-                        	}    else {
-                        	commandString = "USER " + userCommand.getArguments();
-                        	toFtpServer.println(commandString);
-                        	System.out.println("--> " + commandString);
-                        	}	
-                        } else if (userCommand.getCommand().equals("pw")){
-                        	if (userCommand.getArguments() == null){
-                        		System.out.println("901 Incorrect number of arguments");
-                        	}    else {
-                        		commandString = "PASS " + userCommand.getArguments();
-                        	toFtpServer.println(commandString);
-                        	System.out.println("--> " + commandString);
-                        	}
-                        }    else if (userCommand.getCommand().equals("quit")) {
-                        	System.out.println("Bye bye!! :)");
-                        	return;
-                        }    else if (userCommand.isSilentReturn()) {
-                        	System.out.println("csftp> ");
-                        }    else {
-                        	System.out.println("900 Invalid command");
-                        	System.out.println("csftp> ");
-                        }
-                    }
-                }
-        
+                         if (userString != null){
+                         	
+                         	userCommand = new Command(userString.getBytes());
+                         	String commandString;
+                             if (userCommand.getCommand().equals("user")){
+                             	if (userCommand.getArguments() == null){
+                             		System.out.println("901 Incorrect number of arguments");
+                             		readServerResponse = false;
+                             	}    else {
+                             	commandString = "USER " + userCommand.getArguments();
+                             	toFtpServer.println(commandString);
+                             	System.out.println("--> " + commandString);
+                             	readServerResponse = true;
+                             	}	
+                             } else if (userCommand.getCommand().equals("pw")){
+                             	if (userCommand.getArguments() == null){
+                             		System.out.println("901 Incorrect number of arguments");
+                             		readServerResponse = false;
+                             	}    else {
+                             		commandString = "PASS " + userCommand.getArguments();
+                             	toFtpServer.println(commandString);
+                             	System.out.println("--> " + commandString);
+                             	readServerResponse = true;
+                             	}
+                             }    else if (userCommand.getCommand().equals("quit")) {
+                             	System.out.println("Bye bye!! :)");
+                             	continueLoop = false;
+                             }    else if (userCommand.isSilentReturn()) {
+                             	readServerResponse = false;
+                             }    else {
+                             	System.out.println("900 Invalid command");
+                             	readServerResponse = false;
+                             }
+                         }
+                     }
+    
                 Command command = new Command(cmdString);
                 command.echoToTerminal();
 
