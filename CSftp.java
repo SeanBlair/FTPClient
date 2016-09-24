@@ -49,17 +49,13 @@ public class CSftp
                 
                 while (continueLoop) {
                 	if (readServerResponse) {
-                	//if ((fromServer = fromFtpServer.readLine()) != null){
-                		fromServer = fromFtpServer.readLine(); 
-                		System.out.println("<-- " + fromServer);                    // need to iterate through lines, read response codes, then exit.
+                		fromServer = fromFtpServer.readLine();  //this will not be sufficient when server's response is more than one line.
+                		System.out.println("<-- " + fromServer);     //According to TA, need to iterate through lines, read response codes, then exit.
                 	}
                 	System.out.println("csftp> ");
-                    
-                	
-                         //fromUser = consoleInput.readLine();
+
                     userString = consoleInput.readLine();
-                         if (userString != null){
-                         	
+                         if (userString != null){  	
                          	userCommand = new Command(userString.getBytes());
                          	String commandString;
                              if (userCommand.getCommand().equals("user")){
@@ -77,15 +73,15 @@ public class CSftp
                              		System.out.println("901 Incorrect number of arguments");
                              		readServerResponse = false;
                              	}    else {
-                             		commandString = "PASS " + userCommand.getArguments();
+                             	commandString = "PASS " + userCommand.getArguments();
                              	toFtpServer.println(commandString);
                              	System.out.println("--> " + commandString);
                              	readServerResponse = true;
                              	}
-                             }    else if (userCommand.getCommand().equals("quit")) {
+                             } else if (userCommand.getCommand().equals("quit")) {
                              	System.out.println("Bye bye!! :)");
                              	continueLoop = false;
-                             }    else if (userCommand.isSilentReturn()) {
+                             } else if (userCommand.isSilentReturn()) {
                              	readServerResponse = false;
                              }    else {
                              	System.out.println("900 Invalid command");
