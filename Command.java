@@ -29,7 +29,10 @@ public class Command {
      */
     public void echoToTerminal() {
         if (!isSilentReturn()) {
-            System.out.println(fullCommand);
+            // As per assignment outline:
+            // All messages sent by the client to the FTP server over the control connection
+            // must be echoed to standard output with the prefix '--> '
+            System.out.println("--> " + fullCommand);
         }
     }
 
