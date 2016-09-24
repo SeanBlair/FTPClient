@@ -45,17 +45,8 @@ public class CSftp
                 if (len <= 0)
                     break;
                 // Start processing the command here.
-                StringBuffer buffer = new StringBuffer();
-                for (int i = 0; i < cmdString.length; i++) {
-                    // get all characters up to newline
-                    if (cmdString[i] == ('\n')) {
-                        break;
-                    }
-                    buffer.append((char) cmdString[i]);
-                }
-                if (!(buffer.length() == 0 || buffer.charAt(0) == '#')) {
-                    System.out.println(buffer.toString());
-                }
+                Command command = new Command(cmdString);
+                command.echoToTerminal();
 
 //				System.out.println("900 Invalid command.");
             }
