@@ -30,7 +30,7 @@ public class Command {
      */
     public void echoToTerminal() {
         if (!isSilentReturn()) {
-            System.out.println("--> " + fullCommand);
+            System.out.println(fullCommand);
         }
     }
 
