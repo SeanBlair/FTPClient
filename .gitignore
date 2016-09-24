@@ -65,3 +65,6 @@ __MACOSX/
 /.idea/
 /.idea/uiDesigner.xml
 /out/
+
+*.classpath
+*.project
