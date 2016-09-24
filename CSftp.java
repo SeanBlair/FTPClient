@@ -19,7 +19,7 @@ public class CSftp
     static final int ARG_CNT = 2;
 
     public static void main(String [] args) throws IOException {
-        byte cmdString[] = new byte[MAX_LEN];
+        //byte cmdString[] = new byte[MAX_LEN];
 
         // Get command line arguments and connect to FTP
         // If the arguments are invalid or there aren't enough of them
@@ -35,51 +35,45 @@ public class CSftp
 
         try {
         	Socket mySocket = new Socket(hostName, portNumber);
-        	PrintWriter toServer = new PrintWriter(mySocket.getOutputStream(), true);  //socketOutputStream   (to FTP server)
-        	BufferedReader toMe = new BufferedReader(                               // socketInputStream	(from FTP server
+        	PrintWriter toFtpServer = new PrintWriter(mySocket.getOutputStream(), true);  //socketOutputStream   (to FTP server)
+        	BufferedReader formFtpServer = new BufferedReader(                               // socketInputStream	(from FTP server
                     new InputStreamReader(mySocket.getInputStream()));
-        
-        	
-            BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));  // consoleImputStream   
+                	
+            BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));  // consoleImputStream   
             
                 String fromServer;
                 String fromUser;
 
-                while ((fromServer = in.readLine()) != null) {       // not sufficient , sometimes responses are more than one line.
-                    System.out.println("Server: " + fromServer);     // need to iterate through lines, read response codes, then exit.
-                    if (fromServer.equals("Bye."))
-                        break;
+                while ((fromServer = formFtpServer.readLine()) != null) {       // not sufficient , sometimes responses are more than one line.
+                    System.out.println("<-- " + fromServer);                    // need to iterate through lines, read response codes, then exit.
+                    System.out.println("csftp> ");
                     
-                    fromUser = stdIn.readLine();
+                    fromUser = consoleInput.readLine();
                     if (fromUser != null) {
-                        System.out.println("Client: " + fromUser);
                         
                         if (fromUser.contains("user"))
                         {
-                        	out.println("USER " + fromUser.substring(5));
+                        	String userCommand = "USER " + fromUser.substring(5);
+                        	toFtpServer.println(userCommand);
+                        	System.out.println("--> " + userCommand);
+                        	
                         }else if (fromUser.contains("pw"))
                         {
-                        	out.println("PASS " + fromUser.substring(5));
+                        	String pwCommand = "PASS " + fromUser.substring(3);
+                        	toFtpServer.println(pwCommand);
+                        	System.out.println("--> " + pwCommand);
+                        	
                         }else if (fromUser.contains("quit"))
                         {
+                        	System.out.println("Bye bye!! :)");
                         	return;
                         }
-                        //out.println(fromUser);
                     }
                 }
         	
-            for (int len = 1; len > 0;) {
-                System.out.print("csftp> ");
-                len = System.in.read(cmdString);
-                if (len <= 0)
-                    break;
-                // Start processing the command here.
                 Command command = new Command(cmdString);
                 command.echoToTerminal();
-                
 
-				System.out.println("900 Invalid command.");
-            }
             
         }  catch (UnknownHostException exception) {
         	System.err.println("Unknown host!!!");
