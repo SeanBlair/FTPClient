@@ -42,35 +42,50 @@ public class CSftp
             BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));  // consoleImputStream   
             
                 String fromServer;
-                String fromUser;
+                Command userCommand;
+                String userString;
+                Boolean continueLoop = true;
+                
+                
 
                 while ((fromServer = formFtpServer.readLine()) != null) {       // not sufficient , sometimes responses are more than one line.
                     System.out.println("<-- " + fromServer);                    // need to iterate through lines, read response codes, then exit.
                     System.out.println("csftp> ");
                     
-                    fromUser = consoleInput.readLine();
-                    if (fromUser != null) {
-                        
-                        if (fromUser.contains("user"))
-                        {
-                        	String userCommand = "USER " + fromUser.substring(5);
-                        	toFtpServer.println(userCommand);
-                        	System.out.println("--> " + userCommand);
-                        	
-                        }else if (fromUser.contains("pw"))
-                        {
-                        	String pwCommand = "PASS " + fromUser.substring(3);
-                        	toFtpServer.println(pwCommand);
-                        	System.out.println("--> " + pwCommand);
-                        	
-                        }else if (fromUser.contains("quit"))
-                        {
+                    //fromUser = consoleInput.readLine();
+                    userString = consoleInput.readLine();
+                    if (userString != null){
+                    	
+                    	userCommand = new Command(userString.getBytes());
+                    	String commandString;
+                        if (userCommand.getCommand().equals("user")){
+                        	if (userCommand.getArguments() == null){
+                        		System.out.println("901 Incorrect number of arguments");
+                        	}    else {
+                        	commandString = "USER " + userCommand.getArguments();
+                        	toFtpServer.println(commandString);
+                        	System.out.println("--> " + commandString);
+                        	}	
+                        } else if (userCommand.getCommand().equals("pw")){
+                        	if (userCommand.getArguments() == null){
+                        		System.out.println("901 Incorrect number of arguments");
+                        	}    else {
+                        		commandString = "PASS " + userCommand.getArguments();
+                        	toFtpServer.println(commandString);
+                        	System.out.println("--> " + commandString);
+                        	}
+                        }    else if (userCommand.getCommand().equals("quit")) {
                         	System.out.println("Bye bye!! :)");
                         	return;
+                        }    else if (userCommand.isSilentReturn()) {
+                        	System.out.println("csftp> ");
+                        }    else {
+                        	System.out.println("900 Invalid command");
+                        	System.out.println("csftp> ");
                         }
                     }
                 }
-        	
+        
                 Command command = new Command(cmdString);
                 command.echoToTerminal();
 
