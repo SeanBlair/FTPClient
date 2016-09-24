@@ -9,15 +9,7 @@ public class Command {
 
     public Command(byte[] byteArray) {
         setFullCommand(byteArray);
-
-        String[] commandParts = splitFullCommand();
-        // TODO validate the command format and notify user if there were too many arguments, or other problems
-        this.command = commandParts[0];
-        if (commandParts.length > 1) {
-            this.argument = commandParts[1];
-        } else {
-            this.argument = null;
-        }
+        setCommandAndArgument();
     }
 
     /**
@@ -75,13 +67,25 @@ public class Command {
 
     public void setFullCommand(byte[] byteArr) {
         this.fullCommand = parseByteArray(byteArr);
+        setCommandAndArgument();
+    }
+    
+    private void setCommandAndArgument() {
+        String[] commandParts = splitFullCommand();
+        // TODO validate the command format and notify user if there were too many arguments, or other problems
+        this.command = commandParts[0];
+        if (commandParts.length > 1) {
+            this.argument = commandParts[1];
+        } else {
+            this.argument = null;
+        }
     }
 
     public String getCommand() {
         return command;
     }
 
-    public String getArguments() {
+    public String getArgument() {
         return argument;
     }
 }
