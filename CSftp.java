@@ -1,9 +1,7 @@
-//import java.io.IOException;
+
 import java.io.*;
 import java.net.*;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
+
 
 //
 // This is an implementation of a simplified version of a command 
@@ -90,9 +88,6 @@ public class CSftp
                          }
                      }
     
-                Command command = new Command(cmdString);
-                command.echoToTerminal();
-
             
         }  catch (UnknownHostException exception) {
         	System.err.println("Unknown host!!!");
