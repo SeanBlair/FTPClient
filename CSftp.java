@@ -30,6 +30,7 @@ public class CSftp {
 
 //			Boolean readServerResponse = true;
 
+
             for (int len = 1; len > 0;) {
                 System.out.print("csftp> ");
 
@@ -41,8 +42,9 @@ public class CSftp {
 				Command userCommand = new Command(cmdString);
                 ftpHandler.executeCommand(userCommand);
 			}
-
+				
 			ftpHandler.closeSocket();
+			
 
 		} catch (UnknownHostException exception) {
 			System.err.println("Unknown host");
