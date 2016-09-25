@@ -17,7 +17,7 @@ public class FtpHandler {
         socket = new Socket(host, port);
         toFtpServer = new PrintWriter(socket.getOutputStream(), true);
         fromFtpServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        System.out.println(getCompleteResponseString(fromFtpServer));
+        System.out.println(getCompleteResponseString());
     }
 
 
@@ -25,47 +25,48 @@ public class FtpHandler {
         String userInputCommand = command.getCommand();
         String argument = command.getArgument();
         String commandString;
-        switch (userInputCommand) {
-            case "user":
-                if (argument == null) {
-                    System.out.println("901 Incorrect number of arguments"); // TODO: check if number of arguments != 1
-                    return;
-                }
-                commandString = "USER " + argument;
-                break;
-            case "pw":
-                if (argument == null) {
-                    System.out.println("901 Incorrect number of arguments"); // TODO: check if number of arguments != 1
-                    return;
-                }
-                commandString = "PASS " + argument;
-                break;
-            case "quit":
-                commandString = "QUIT";  // TODO in this case need to close socket and exit program, after talking to server
-                break;
-            // TODO implement rest of commands
+        if (!command.isSilentReturn()) {
+            switch (userInputCommand) {
+                case "user":
+                    if (argument == null) {
+                        System.out.println("901 Incorrect number of arguments"); // TODO: check if number of arguments != 1
+                        return;
+                    }
+                    commandString = "USER " + argument;
+                    break;
+                case "pw":
+                    if (argument == null) {
+                        System.out.println("901 Incorrect number of arguments"); // TODO: check if number of arguments != 1
+                        return;
+                    }
+                    commandString = "PASS " + argument;
+                    break;
+                case "quit":
+                    commandString = "QUIT";  // TODO in this case need to close socket and exit program, after talking to server
+                    break;
+                // TODO implement rest of commands
 //            case "get":
 //                break;
 //            case "cd":
 //                break;
-//            case "dir":
-//                break;
-// TODO implement "silently ignored case" (new prompt displayed)                
-            default:
-                System.out.println("900 Invalid command.");
-                // return without contacting server
-                return;
-        }
-        // send command to server
-        System.out.println("--> " + commandString);
-        toFtpServer.println(commandString);
+//                case "dir":
+//                    break;
+                default:
+                    System.out.println("900 Invalid command.");
+                    // return without contacting server
+                    return;
+            }
+            // send command to server
+            System.out.println("--> " + commandString);
+            toFtpServer.println(commandString);
 
-        // handle response from server
-        System.out.println("<-- " + getCompleteResponseString(fromFtpServer));
-        // TODO act on response from server, handle codes, etc
+            // handle response from server
+            System.out.println("<-- " + getCompleteResponseString());
+            // TODO act on response from server, handle codes, etc
+        }
     }
 	
-	 private String getCompleteResponseString(BufferedReader fromFtpServer) throws IOException {
+	 private String getCompleteResponseString() throws IOException {
 			String serverResponse = null;
 			String line = fromFtpServer.readLine();
 			serverResponse = line;                         // a response always starts with a 3 digit number. if it is followed 

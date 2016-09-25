@@ -49,7 +49,7 @@ public class Command {
     /**
      * @return true if the command is the newline char or begins with '#'
      */
-    private boolean isSilentReturn() {
+    public boolean isSilentReturn() {
         return (fullCommand.length() == 0 || fullCommand.charAt(0) == '#');
     }
 
