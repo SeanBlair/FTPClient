@@ -52,6 +52,7 @@ public class FtpHandler {
 //                break;
 //            case "dir":
 //                break;
+// TODO implement "silently ignored case" (new prompt displayed)                
             default:
                 System.out.println("900 Invalid command.");
                 // return without contacting server
