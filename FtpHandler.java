@@ -20,7 +20,7 @@ public class FtpHandler {
             socket = new Socket(host, port);
             toFtpServer = new PrintWriter(socket.getOutputStream(), true);
             fromFtpServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            System.out.println(getCompleteResponseString());
+            System.out.println("<-- " + getCompleteResponseString());
         } catch (IOException e) {
             // the socket could not be created
             // TODO timeout on attempt to create connection
