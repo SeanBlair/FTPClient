@@ -28,12 +28,8 @@ public class CSftp {
 		try {
             FtpHandler ftpHandler = new FtpHandler(hostName, portNumber);
 
-//			Boolean readServerResponse = true;
-
-
             for (int len = 1; len > 0;) {
                 System.out.print("csftp> ");
-
                 len = System.in.read(cmdString); // adds user input bytes to cmdString
                 if (len <= 0) {                  // null check for user input
                     break;
@@ -43,14 +39,12 @@ public class CSftp {
                 ftpHandler.executeCommand(userCommand);
 			}
 				
-			ftpHandler.closeSocket();
-			
+			ftpHandler.closeSocket();	
 
 		} catch (UnknownHostException exception) {
 			System.err.println("Unknown host");
 		} catch (IOException exception) {
-			System.err
-					.println("998 Input error while reading commands, terminating.");
+			System.err.println("998 Input error while reading commands, terminating.");
 		}
 	}
 
