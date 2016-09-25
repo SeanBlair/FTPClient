@@ -16,11 +16,17 @@ public class FtpHandler {
     PrintWriter toFtpServer;
     BufferedReader fromFtpServer;
 
-    public FtpHandler(String host, int port) throws IOException {
-        socket = new Socket(host, port);
-        toFtpServer = new PrintWriter(socket.getOutputStream(), true);
-        fromFtpServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        System.out.println(getCompleteResponseString());
+    public FtpHandler(String host, int port) {
+        try {
+            socket = new Socket(host, port);
+            toFtpServer = new PrintWriter(socket.getOutputStream(), true);
+            fromFtpServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            System.out.println(getCompleteResponseString());
+        } catch (IOException e) {
+            // the socket could not be created
+            // TODO timeout on attempt to create connection
+            System.out.format("920 Control connection to %s on port %d failed to open", host, port);
+        }
     }
 
 
@@ -52,8 +58,13 @@ public class FtpHandler {
                 // TODO implement rest of commands
 //            case "get":
 //                break;
-//            case "cd":
-//                break;
+                case "cd":
+                    if (argument == null) {
+                        System.out.println("901 Incorrect number of arguments"); // TODO: check if number of arguments != 1
+                        return;
+                    }
+                    commandString = "CWD " + argument;
+                    break;
                 case "dir":
                     dataConnection = true;
                     commandString = "LIST";
@@ -74,7 +85,7 @@ public class FtpHandler {
                 BufferedReader fromDataFtpServer = new BufferedReader(
                         new InputStreamReader(dataSocket.getInputStream()));
 
-                // TODO this covers the dir case but will likely be different for get and cd
+                // TODO this covers the dir case but will likely be different for get
                 while (fromDataFtpServer.readLine() != null) {
                     System.out.println(fromDataFtpServer.readLine());
                 }
