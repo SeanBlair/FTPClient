@@ -12,6 +12,8 @@ public class FtpHandler {
     Socket socket;
     PrintWriter toFtpServer;
     BufferedReader fromFtpServer;
+    
+    String lastServerResponseForTesting = "The server has not yet been called"; 
 
     public FtpHandler(String host, int port) {
         try {
@@ -74,6 +76,13 @@ public class FtpHandler {
             sendCommandToServer(commandString);
 
             // handle response from server
+            String response = getCompleteResponseString();
+            System.out.println("<-- " + response);
+            lastServerResponseForTesting = response;
+                String response1 = getCompleteResponseString();
+                System.out.println("<-- " + response1);
+                lastServerResponseForTesting = response1;
+                
             String response = getCompleteResponseString();
             System.out.println("<-- " + response);
 
