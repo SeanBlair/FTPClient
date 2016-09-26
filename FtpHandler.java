@@ -13,14 +13,15 @@ public class FtpHandler {
     PrintWriter toFtpServer;
     BufferedReader fromFtpServer;
     
-    String lastServerResponseForTesting = "The server has not yet been called"; 
+    private String serverResponse;
 
     public FtpHandler(String host, int port) {
         try {
             socket = new Socket(host, port);
             toFtpServer = new PrintWriter(socket.getOutputStream(), true);
             fromFtpServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            System.out.println("<-- " + getCompleteResponseString());
+            serverResponse = getCompleteResponseString();
+            System.out.println("<-- " + serverResponse);
         } catch (IOException e) {
             // the socket could not be created
             // TODO timeout on attempt to create connection
@@ -34,6 +35,8 @@ public class FtpHandler {
         String argument = command.getArgument();
         String commandString;
         boolean isDataConnection = false;
+        String response;
+        
         if (!command.isSilentReturn()) {
             switch (userInputCommand) {
                 case "user":
@@ -76,13 +79,23 @@ public class FtpHandler {
             sendCommandToServer(commandString);
 
             // handle response from server
-            String response = getCompleteResponseString();
+            response = getCompleteResponseString();
             System.out.println("<-- " + response);
-            lastServerResponseForTesting = response;
-                String response1 = getCompleteResponseString();
-                System.out.println("<-- " + response1);
-                lastServerResponseForTesting = response1;
+            serverResponse = response;
+                response = getCompleteResponseString();
+                System.out.println("<-- " + response);
+                serverResponse = response;
                 
+    }
+    
+    /**
+     * This is used by FtpHandlerTest.java for validation.
+     * Maybe should be called getLastServerResponseString()
+     * because there can be other server responses before this one.
+     * for example: dir receives at least two responses, this would get the last one...
+     */
+    public String getServerResponseString() {
+    	return serverResponse;
             String response = getCompleteResponseString();
             System.out.println("<-- " + response);
 
