@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -34,8 +31,7 @@ public class FtpHandler {
         String userInputCommand = command.getCommand();
         String argument = command.getArgument();
         String commandString;
-        Socket dataSocket = null;
-        boolean dataConnection = false;
+        boolean isDataConnection = false;
         if (!command.isSilentReturn()) {
             switch (userInputCommand) {
                 case "user":
@@ -66,9 +62,8 @@ public class FtpHandler {
                     commandString = "CWD " + argument;
                     break;
                 case "dir":
-                    dataConnection = true;
-                    commandString = "LIST";
-                    dataSocket = openPassiveDataConnection();
+                    isDataConnection = true;
+                    commandString = "PASV";
                     break;
                 default:
                     System.out.println("900 Invalid command.");
@@ -79,49 +74,15 @@ public class FtpHandler {
             sendCommandToServer(commandString);
 
             // handle response from server
-            System.out.println("<-- " + getCompleteResponseString());
+            String response = getCompleteResponseString();
+            System.out.println("<-- " + response);
 
-            if (dataConnection) {
-                BufferedReader fromDataFtpServer = new BufferedReader(
-                        new InputStreamReader(dataSocket.getInputStream()));
-
-                // TODO this covers the dir case but will likely be different for get
-                while (fromDataFtpServer.readLine() != null) {
-                    System.out.println(fromDataFtpServer.readLine());
-                }
-
-                System.out.println("<-- " + getCompleteResponseString());
-                // transfer complete, close data connection
-                dataSocket.close();
+            if (isDataConnection) {
+                DataConnection dataConnection = new DataConnection(response, command);
+                dataConnection.receiveTransfer();
+                dataConnection.closeSocket();
             }
             // TODO act on response from server, handle codes, etc
-        }
-    }
-
-    /**
-     * Open a separate data connection with the server
-     */
-    private Socket openPassiveDataConnection() throws IOException {
-        sendCommandToServer("PASV");
-        String response = getCompleteResponseString();
-        System.out.println("<-- " + response);
-
-        // calculate IP and port to connect to for data connection
-        Pattern pattern = Pattern.compile("(\\d{1,3},){5}\\d{1,3}");
-        Matcher matcher = pattern.matcher(response);
-
-        if (matcher.find()) {
-            String[] responseArray = matcher.group().split(",");
-            int dataPort = (Integer.parseInt(responseArray[4]) << 8) + Integer.parseInt(responseArray[5]);
-            String dataIP = String.join(".", Arrays.copyOfRange(responseArray, 0, 4));
-
-            // open new socket for data connection
-            Socket dataSocket = new Socket(dataIP, dataPort);
-            return dataSocket;
-        }
-        else {
-            // TODO handle case appropriately when no regex match found
-            return null;
         }
     }
 
@@ -141,7 +102,7 @@ public class FtpHandler {
             String code = line.substring(0, 3) + " ";
             do {
                 line = fromFtpServer.readLine();
-                serverResponse += line;
+                serverResponse += line.concat("\n");
             }    while (!(line.contains(code)));      // the last line starts with the same 3 digits but followed by a space
         }
         return serverResponse;
@@ -149,5 +110,85 @@ public class FtpHandler {
 
     public void closeSocket() throws IOException {
         socket.close();
+    }
+
+
+    /**
+     * Private class for data connections, opened only in conjunction with a control connection
+     * and when user commands dictate
+     */
+    private class DataConnection {
+
+        private BufferedReader dataInFromServer;
+
+        private Command command;
+
+        private String dataIP;
+        private int dataPort;
+        private Socket dataSocket;
+
+        public DataConnection(String dataResponse, Command command) {
+            this.command = command;
+            parseResponse(dataResponse);
+
+            try {
+                dataSocket = new Socket(dataIP, dataPort);
+                dataInFromServer = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+            } catch (IOException e) {
+                // the socket could not be created
+                // TODO timeout on attempt to create connection
+                System.out.format("930 Data transfer connection to %s on port %d failed to open", dataIP, dataPort);
+            }
+        }
+
+        /**
+         * Parse out the IP and port for the data connection
+         * @param dataResponse the full response string from the server
+         */
+        private void parseResponse(String dataResponse) {
+            Pattern pattern = Pattern.compile("(\\d{1,3},){5}\\d{1,3}");
+            Matcher matcher = pattern.matcher(dataResponse);
+
+            if (matcher.find()) {
+                String[] responseArray = matcher.group().split(",");
+                dataPort = (Integer.parseInt(responseArray[4]) << 8) + Integer.parseInt(responseArray[5]);
+                dataIP = String.join(".", Arrays.copyOfRange(responseArray, 0, 4));
+                System.out.println("data IP: " + dataIP);
+                System.out.println("data port: " + dataPort);
+            } else {
+                // TODO handle case appropriately when no regex match found
+            }
+        }
+
+        /**
+         * Receive either the directory listings, or a file transfer
+         */
+        public void receiveTransfer() throws IOException {
+            String commandString = command.getCommand();
+            System.out.println("command string is: " + commandString);
+            if (commandString.equals("dir")) {
+
+                sendCommandToServer("LIST");
+                System.out.println("<-- " + getCompleteResponseString());
+
+                while (dataInFromServer.readLine() != null) {
+                    System.out.println(dataInFromServer.readLine());
+                }
+
+            } else if (command.getCommand().equals("GET")) {
+                // TODO implement get command
+            } else {
+                System.out.println("900 Invalid command.");
+                return;
+            }
+            System.out.println("<-- " + getCompleteResponseString());
+        }
+
+        /**
+         * Close the data connection
+         */
+        public void closeSocket() throws IOException {
+            dataSocket.close();
+        }
     }
 }
