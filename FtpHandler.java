@@ -175,8 +175,6 @@ public class FtpHandler {
                     System.out.println(dataInFromServer.readLine());
                 }
 
-                // transfer complete, close data connection
-//                dataSocket.close();
             } else if (command.getCommand().equals("GET")) {
                 // TODO implement get command
             } else {
