@@ -31,7 +31,7 @@ public class FtpHandler {
         String userInputCommand = command.getCommand();
         String argument = command.getArgument();
         String commandString;
-        boolean dataConnection = false;
+        boolean isDataConnection = false;
         if (!command.isSilentReturn()) {
             switch (userInputCommand) {
                 case "user":
@@ -62,7 +62,7 @@ public class FtpHandler {
                     commandString = "CWD " + argument;
                     break;
                 case "dir":
-                    dataConnection = true;
+                    isDataConnection = true;
                     commandString = "PASV";
                     break;
                 default:
@@ -77,10 +77,10 @@ public class FtpHandler {
             String response = getCompleteResponseString();
             System.out.println("<-- " + response);
 
-            if (dataConnection) {
-                DataConnection dataSocket = new DataConnection(response, command);
-                dataSocket.receiveTransfer();
-                dataSocket.closeSocket();
+            if (isDataConnection) {
+                DataConnection dataConnection = new DataConnection(response, command);
+                dataConnection.receiveTransfer();
+                dataConnection.closeSocket();
             }
             // TODO act on response from server, handle codes, etc
         }
