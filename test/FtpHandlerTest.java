@@ -99,9 +99,9 @@ public class FtpHandlerTest {
     
     /**
      * Sanity test for all commands.
-     * A semi-random runthrough of a sequence of commands.
+     * A semi-random run-through of a sequence of commands.
      * 
-     * Flakey - Designed to be run with ftp.cs.ubc.ca
+     * Flakey
      */
     
 	@Test
