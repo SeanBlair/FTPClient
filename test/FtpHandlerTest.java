@@ -88,7 +88,7 @@ public class FtpHandlerTest {
     		command = new Command(PW_LKJ);
     		ftpHandler.executeCommand(command);
     		response = ftpHandler.getServerResponseString();
-    		assert(response.substring(0, 3).equals("331"));
+    		assert(response.substring(0, 3).equals("230"));
     	}
     	
     	catch (IOException e)
