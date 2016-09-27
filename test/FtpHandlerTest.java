@@ -18,7 +18,7 @@ public class FtpHandlerTest {
 	private String DLL = "ftp.dell.com";
 	private String MCS = "ftp.microsoft.com";
 	
-	private String host = UBC;
+	private String host = CSC;
 	private int port = 21;
 	
 	FtpHandler ftpHandler;
@@ -85,7 +85,7 @@ public class FtpHandlerTest {
 			ftpHandler.executeCommand(command);
 			
 			response = ftpHandler.getServerResponseString();
-			assert(response.substring(0, 3).equals("226"));
+			assert(response.substring(0, 3).equals("227"));
 			
 			
 			command = new Command(COMMENT);
@@ -93,7 +93,7 @@ public class FtpHandlerTest {
 			
 			response = ftpHandler.getServerResponseString();
 			// no change from previous state (server not called)
-			assert(response.substring(0, 3).equals("226"));
+			assert(response.substring(0, 3).equals("227"));
 			
 			
 			command = new Command(INVALID_COMMAND);
@@ -101,7 +101,7 @@ public class FtpHandlerTest {
 			
 			response = ftpHandler.getServerResponseString();
 			// no change from previous state (server not called)
-			assert(response.substring(0, 3).equals("226"));		
+			assert(response.substring(0, 3).equals("227"));		
 			
 			
 			command = new Command(EMPTY_STRING);
@@ -109,7 +109,7 @@ public class FtpHandlerTest {
 			
 			response = ftpHandler.getServerResponseString();
 			// no change from previous state (server not called)
-			assert(response.substring(0, 3).equals("226"));		
+			assert(response.substring(0, 3).equals("227"));		
 			
 			
 			command = new Command(QUIT);

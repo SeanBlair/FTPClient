@@ -82,10 +82,14 @@ public class FtpHandler {
             response = getCompleteResponseString();
             System.out.println("<-- " + response);
             serverResponse = response;
-                response = getCompleteResponseString();
-                System.out.println("<-- " + response);
-                serverResponse = response;
-                
+            
+            if (isDataConnection) {
+                DataConnection dataConnection = new DataConnection(response, command);
+                dataConnection.receiveTransfer();
+                dataConnection.closeSocket();
+            }
+            // TODO act on response from server, handle codes, etc
+        }             
     }
     
     /**
@@ -96,16 +100,6 @@ public class FtpHandler {
      */
     public String getServerResponseString() {
     	return serverResponse;
-            String response = getCompleteResponseString();
-            System.out.println("<-- " + response);
-
-            if (isDataConnection) {
-                DataConnection dataConnection = new DataConnection(response, command);
-                dataConnection.receiveTransfer();
-                dataConnection.closeSocket();
-            }
-            // TODO act on response from server, handle codes, etc
-        }
     }
 
     /**
