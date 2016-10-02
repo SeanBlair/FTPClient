@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,8 +21,12 @@ public class FtpHandler {
             socket = new Socket(host, port);
             toFtpServer = new PrintWriter(socket.getOutputStream(), true);
             fromFtpServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
             serverResponse = getCompleteResponseString();
             System.out.println("<-- " + serverResponse);
+        } catch (SocketException se) {
+
+
         } catch (IOException e) {
             // the socket could not be created
             // TODO timeout on attempt to create connection
@@ -150,9 +155,9 @@ public class FtpHandler {
             try {
                 dataSocket = new Socket(dataIP, dataPort);
                 dataInFromServer = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+                dataSocket.setSoTimeout(30000); // 30 second timeout
             } catch (IOException e) {
-                // the socket could not be created
-                // TODO timeout on attempt to create connection
+                // the socket could not be created or timed out
                 System.out.format("930 Data transfer connection to %s on port %d failed to open", dataIP, dataPort);
             }
         }
@@ -179,25 +184,30 @@ public class FtpHandler {
         /**
          * Receive either the directory listings, or a file transfer
          */
-        public void receiveTransfer() throws IOException {
+        public void receiveTransfer(){
             String commandString = command.getCommand();
             System.out.println("command string is: " + commandString);
-            if (commandString.equals("dir")) {
 
-                sendCommandToServer("LIST");
-                System.out.println("<-- " + getCompleteResponseString());
+            try {
+                if (commandString.equals("dir")) {
 
-                while (dataInFromServer.readLine() != null) {
-                    System.out.println(dataInFromServer.readLine());
+                    sendCommandToServer("LIST");
+                    System.out.println("<-- " + getCompleteResponseString());
+
+                    while (dataInFromServer.readLine() != null) {
+                        System.out.println(dataInFromServer.readLine());
+                    }
+
+                } else if (command.getCommand().equals("GET")) {
+                    // TODO implement get command
+                } else {
+                    System.out.println("900 Invalid command.");
+                    return;
                 }
-
-            } else if (command.getCommand().equals("GET")) {
-                // TODO implement get command
-            } else {
-                System.out.println("900 Invalid command.");
-                return;
+                System.out.println("<-- " + getCompleteResponseString());
+            } catch (IOException ioe) {
+                System.out.println("935 Data transfer connection I/O error, closing data connection.");
             }
-            System.out.println("<-- " + getCompleteResponseString());
         }
 
         /**
