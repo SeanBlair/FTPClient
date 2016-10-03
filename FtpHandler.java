@@ -166,6 +166,8 @@ public class FtpHandler {
                 }
 
                 System.out.println("<-- " + getCompleteResponseString());
+            } catch (FileNotFoundException fnfe) {
+                System.out.format("910 Access to local file %s denied.", command.getDataArgument());
             } catch (IOException ioe) {
                 System.out.println("935 Data transfer connection I/O error, closing data connection.");
             }
