@@ -3,37 +3,41 @@
  */
 public class Command {
 
-    private String fullCommand;
+    static final String USER = "USER";
+    static final String PASS = "PASS";
+    static final String CWD = "CWD";
+    static final String QUIT = "QUIT";
+
+    static final String PASV = "PASV";
+    static final String LIST = "LIST";
+    static final String RETR = "RETR";
+
+    private String trimmedUserInput;
     private String command;
     private String argument;
+    private String dataCommand;
 
-    public Command(byte[] byteArray) {
-        setFullCommand(byteArray);
-        setCommandAndArgument();
-    }
+    private String dataArgument;
 
-    /**
-     * Split command into an array on whitespace and trim each part
-     */
-    public String[] splitFullCommand() {
-        String[] commandParts = fullCommand.split("\\s+");
+    private boolean isDataConnection;
 
-        for (String str : commandParts) {
-            trimAll(str);
-        }
-        return commandParts;
-    }
-
-    /**
-     * If command should not silently return, print it to the terminal
-     * Convenience method for development
-     */
-    public void echoToTerminal() {
-        if (!isSilentReturn()) {
-            System.out.println(fullCommand);
+    public Command(byte[] byteArray) throws WrongNumberOfArgumentsException, InvalidCommandException {
+        setTrimmedUserInput(byteArray);
+        if (isSilentReturn()) {
+            return;
+        } else {
+            String[] userInputArray = splitUserInput();
+            setCommandAndArgument(userInputArray);
+            if ((userInputArray.length > 2) || !validInput()) {
+                throw new WrongNumberOfArgumentsException();
+            }
         }
     }
 
+    /**
+     * Given an array of characters from the command line, read as a String,
+     * trim leading and trailing white space, and cast to lower case
+     */
     private String parseByteArray(byte[] byteArray) {
         StringBuffer buffer = new StringBuffer();
         for (int i = 0; i < byteArray.length; i++) {
@@ -50,7 +54,71 @@ public class Command {
      * @return true if the command is the newline char or begins with '#'
      */
     public boolean isSilentReturn() {
-        return (fullCommand.length() == 0 || fullCommand.charAt(0) == '#');
+        return (trimmedUserInput.length() == 0 || trimmedUserInput.charAt(0) == '#');
+    }
+
+    /**
+     * Split command into an array of Strings and trim each part
+     */
+    public String[] splitUserInput() {
+        String[] commandParts = trimmedUserInput.split("\\s+");
+
+        for (String str : commandParts) {
+            trimAll(str);
+        }
+        return commandParts;
+    }
+
+    /**
+     * Given an array of Strings of user input, set the FTP command and the argument
+     */
+    public void setCommandAndArgument(String[] commandArray) throws InvalidCommandException {
+        parseAndSetCommand(commandArray[0]);
+        this.argument = "";
+        this.dataArgument = "";
+        if (commandArray.length > 1) {
+            if (isDataCommand()) {
+                this.dataArgument = commandArray[1];
+            } else {
+                this.argument = commandArray[1];
+            }
+        }
+    }
+
+    /**
+     * Set the FTP command based on the user's input
+     * @param command User input command
+     * @throws InvalidCommandException if the user input a command that is not implemented
+     */
+    public void parseAndSetCommand(String command) throws InvalidCommandException {
+        this.isDataConnection = false;
+        this.dataCommand = "";
+        switch (command) {
+            case ("user"):
+                this.command = USER;
+                break;
+            case ("pw"):
+                this.command = PASS;
+                break;
+            case ("cd"):
+                this.command = CWD;
+                break;
+            case ("dir"):
+                this.command = PASV;
+                this.dataCommand = LIST;
+                this.isDataConnection = true;
+                break;
+            case ("get"):
+                this.command = PASV;
+                this.dataCommand = RETR;
+                this.isDataConnection = true;
+                break;
+            case ("quit"):
+                this.command = QUIT;
+                break;
+            default:
+                throw new InvalidCommandException();
+        }
     }
 
     /**
@@ -60,33 +128,103 @@ public class Command {
         return string.replaceAll("\t", "").trim();
     }
 
-    // *********** Getters and Setters **********
-
-    public String getFullCommand() {
-        return fullCommand;
-    }
-
-    public void setFullCommand(byte[] byteArr) {
-        this.fullCommand = parseByteArray(byteArr);
-        setCommandAndArgument();
-    }
-    
-    private void setCommandAndArgument() {
-        String[] commandParts = splitFullCommand();
-        // TODO validate the command format and notify user if there were too many arguments, or other problems
-        this.command = commandParts[0];
-        if (commandParts.length > 1) {
-            this.argument = commandParts[1];
+    /**
+     * @return True if the user input has an argument when it should, or doesn't when it shouldn't
+     */
+    public boolean validInput() {
+        if (requiresArgument() && argument.equals("")) {
+            return false;
+        } else if (!requiresArgument() && !argument.equals("")) {
+            return false;
+        } else if (requiresDataArgument() && dataArgument.equals("")) {
+            return false;
+        } else if (!requiresDataArgument() && !dataArgument.equals("")) {
+            return false;
         } else {
-            this.argument = null;
+            return true;
         }
     }
 
+    /**
+     * @return True if the input command requires an argument
+     */
+    public boolean requiresArgument() {
+        return (command.equals(USER) || command.equals(PASS) || command.equals(CWD));
+    }
+
+    /**
+     * @return True if user input is a data command
+     */
+    public boolean isDataCommand() {
+        return (command.equals(PASV));
+    }
+
+
+    /**
+     * @return True if this is a data command and it requires an argument
+     */
+    public boolean requiresDataArgument() {
+        return dataCommand.equals(RETR);
+    }
+
+
+    /**
+     * If command should not silently return, print it to the terminal
+     * Convenience method for development
+     */
+    public void echoToTerminal() {
+        if (!isSilentReturn()) {
+            System.out.println(trimmedUserInput);
+        }
+    }
+
+    // *********** Getters and Setters **********
+
+    public String getTrimmedUserInput() {
+        return trimmedUserInput;
+    }
+
     public String getCommand() {
-        return command;
+        return this.command;
     }
 
     public String getArgument() {
         return argument;
+    }
+
+    public String getDataCommand() {
+        return dataCommand;
+    }
+
+    public String getDataArgument() {
+        return dataArgument;
+    }
+
+    public String getFtpControlCommand() {
+        if (getArgument().equals("")) {
+            return getCommand();
+        } else {
+            return getCommand() + " " + getArgument();
+        }
+    }
+
+    public String getFtpDataCommand() {
+        if (getDataArgument().equals("")) {
+            return getDataCommand();
+        } else {
+            return getDataCommand() + " " + getDataArgument();
+        }
+    }
+
+    public void setTrimmedUserInput(byte[] byteArray) {
+        this.trimmedUserInput = parseByteArray(byteArray);
+    }
+
+    public boolean isDataConnection() {
+        return isDataConnection;
+    }
+
+    public boolean isQuit() {
+        return (command.equals(QUIT));
     }
 }

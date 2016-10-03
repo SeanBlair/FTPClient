@@ -50,7 +50,7 @@ public class FtpHandlerTest {
 
 
     @Test 
-    public void testExecuteCommand_FtpUbc_USER() {
+    public void testExecuteCommand_FtpUbc_USER() throws ProcessingException {
     	String response;
     	try
     	{
@@ -69,12 +69,12 @@ public class FtpHandlerTest {
     	
     	catch (IOException e)
     	{
-			fail("executeCommand(" + command.getFullCommand() + ") threw an IOException \n" + e.toString());
+			fail("executeCommand(" + command.getTrimmedUserInput() + ") threw an IOException \n" + e.toString());
 		}
     }
     
     @Test 
-    public void testExecuteCommand_FtpUbc_PW() {
+    public void testExecuteCommand_FtpUbc_PW() throws ProcessingException {
     	String response;
     	try
     	{
@@ -93,7 +93,7 @@ public class FtpHandlerTest {
     	
     	catch (IOException e)
     	{
-			fail("executeCommand(" + command.getFullCommand() + ") threw an IOException \n" + e.toString());
+			fail("executeCommand(" + command.getTrimmedUserInput() + ") threw an IOException \n" + e.toString());
 		}
     }
     
@@ -105,7 +105,7 @@ public class FtpHandlerTest {
      */
     
 	@Test
-	public void testExecuteCommand_AllCommandsOnce_FtpUbc() {
+	public void testExecuteCommand_AllCommandsOnce_FtpUbc() throws ProcessingException {
 		String response;
 		try
 		{
@@ -137,27 +137,16 @@ public class FtpHandlerTest {
 			// no change from previous state (server not called)
 			assert(response.substring(0, 3).equals("227"));
 			
-			command = new Command(INVALID_COMMAND);
-			ftpHandler.executeCommand(command);
-			response = ftpHandler.getServerResponseString();
-			// no change from previous state (server not called)
-			assert(response.substring(0, 3).equals("227"));		
-			
 			command = new Command(EMPTY_STRING);
 			ftpHandler.executeCommand(command);
 			response = ftpHandler.getServerResponseString();
 			// no change from previous state (server not called)
-			assert(response.substring(0, 3).equals("227"));		
-			
-			command = new Command(QUIT);
-			ftpHandler.executeCommand(command);
-			response = ftpHandler.getServerResponseString();
-			assert(response.substring(0, 3).equals("221"));
+			assert(response.substring(0, 3).equals("227"));
 		}
 		
 		catch (IOException e)
 		{
-			fail("executeCommand(" + command.getFullCommand() + "threw an IOException \n" + e.toString());
+			fail("executeCommand(" + command.getTrimmedUserInput() + "threw an IOException \n" + e.toString());
 		}
 	}
 	
@@ -167,7 +156,7 @@ public class FtpHandlerTest {
 			ftpHandler.closeSocket();
 			
 		} catch (IOException e) {
-			System.out.println("Unable to close Socket while testing " + command.getFullCommand() + " because of a thrown IOException");
+			System.out.println("Unable to close Socket while testing " + command.getTrimmedUserInput() + " because of a thrown IOException");
 			e.printStackTrace();
 		}
 	}

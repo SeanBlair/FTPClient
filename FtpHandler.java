@@ -35,67 +35,28 @@ public class FtpHandler {
     }
 
 
-    public void executeCommand(Command command) throws IOException {
-        String userInputCommand = command.getCommand();
-        String argument = command.getArgument();
-        String commandString;
-        boolean isDataConnection = false;
+    public void executeCommand(Command command) throws IOException, ProcessingException {
         String response;
 
         if (!command.isSilentReturn()) {
-            switch (userInputCommand) {
-                case "user":
-                    if (argument == null) {
-                        System.out.println("901 Incorrect number of arguments"); // TODO: check if number of arguments != 1
-                        return;
-                    }
-                    commandString = "USER " + argument;
-                    break;
-                case "pw":
-                    if (argument == null) {
-                        System.out.println("901 Incorrect number of arguments"); // TODO: check if number of arguments != 1
-                        return;
-                    }
-                    commandString = "PASS " + argument;
-                    break;
-                case "quit":
-                    commandString = "QUIT";  // TODO in this case need to close socket and exit program, after talking to server
-                    break;
-                // TODO implement rest of commands
-            case "get":
-                isDataConnection = true;
-                commandString = "PASV";
-                break;
-                case "cd":
-                    if (argument == null) {
-                        System.out.println("901 Incorrect number of arguments"); // TODO: check if number of arguments != 1
-                        return;
-                    }
-                    commandString = "CWD " + argument;
-                    break;
-                case "dir":
-                    isDataConnection = true;
-                    commandString = "PASV";
-                    break;
-                default:
-                    System.out.println("900 Invalid command.");
-                    // return without contacting server
-                    return;
-            }
             // send command to server
-            sendCommandToServer(commandString);
+            sendCommandToServer(command.getFtpControlCommand());
 
             // handle response from server
             response = getCompleteResponseString();
             System.out.println("<-- " + response);
             serverResponse = response;
 
-            if (isDataConnection) {
+            if (command.isDataConnection()) {
+                // TODO ensure that server responds positively to data connection request
                 DataConnection dataConnection = new DataConnection(response, command);
                 dataConnection.receiveTransfer();
                 dataConnection.closeSocket();
             }
-            // TODO act on response from server, handle codes, etc
+            if (command.isQuit()) {
+                closeSocket();
+                System.exit(0);
+            }
         }
     }
 
@@ -106,7 +67,7 @@ public class FtpHandler {
      * for example: dir receives at least two responses, this would get the last one...
      */
     public String getServerResponseString() {
-    	return serverResponse;
+        return serverResponse;
     }
 
     /**
@@ -150,25 +111,27 @@ public class FtpHandler {
         private int dataPort;
         private Socket dataSocket;
 
-        public DataConnection(String dataResponse, Command command) {
+        public DataConnection(String dataResponse, Command command) throws ProcessingException {
             this.command = command;
-            parseResponse(dataResponse);
 
             try {
+                parseResponse(dataResponse);
                 dataSocket = new Socket(dataIP, dataPort);
                 dataInFromServer = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+                dataSocket.setSoTimeout(30000); // 30 second timeout
             } catch (IOException e) {
-                // the socket could not be created
-                // TODO timeout on attempt to create connection
+                // the socket could not be created or timed out
                 System.out.format("930 Data transfer connection to %s on port %d failed to open", dataIP, dataPort);
             }
         }
+
+
 
         /**
          * Parse out the IP and port for the data connection
          * @param dataResponse the full response string from the server
          */
-        private void parseResponse(String dataResponse) {
+        private void parseResponse(String dataResponse) throws ProcessingException {
             Pattern pattern = Pattern.compile("(\\d{1,3},){5}\\d{1,3}");
             Matcher matcher = pattern.matcher(dataResponse);
 
@@ -177,44 +140,40 @@ public class FtpHandler {
                 dataPort = (Integer.parseInt(responseArray[4]) << 8) + Integer.parseInt(responseArray[5]);
                 dataIP = String.join(".", Arrays.copyOfRange(responseArray, 0, 4));
             } else {
-                // TODO handle case appropriately when no regex match found
+                throw new ProcessingException("Could not parse the data IP or port.");
             }
         }
 
         /**
          * Receive either the directory listings, or a file transfer
          */
-        public void receiveTransfer() {
-            String commandString = command.getCommand();
-            System.out.println("command string is: " + commandString);
+        public void receiveTransfer(){
+            String dataCommand = command.getDataCommand();
+
             try {
-                if (commandString.equals("dir")) {
+                sendCommandToServer(command.getFtpDataCommand());
+                System.out.println("<-- " + getCompleteResponseString());
 
-                    sendCommandToServer("LIST");
-                    System.out.println("<-- " + getCompleteResponseString());
-
+                if (dataCommand.equals("LIST")) {
                     while (dataInFromServer.readLine() != null) {
                         System.out.println(dataInFromServer.readLine());
                     }
-
-                } else if (command.getCommand().equals("get")) {
-                    sendCommandToServer("RETR " + command.getArgument());
-                    System.out.println("<-- " + getCompleteResponseString());
-
+                } else if (dataCommand.equals("RETR")) {
                     // TODO this while loop hangs if the transfer is forbidden (since there are no chars to read)
-                    FileOutputStream fileOut = new FileOutputStream(command.getArgument());
+                    FileOutputStream fileOut = new FileOutputStream(command.getDataArgument());
                     int next;
                     while ((next = dataInFromServer.read()) != -1) {
                         fileOut.write(next);
                     }
-
                 } else {
-                    System.out.println("900 Invalid command.");
-                    return;
+                    throw new InvalidCommandException();
                 }
+
                 System.out.println("<-- " + getCompleteResponseString());
-            } catch (IOException e) {
-                System.out.println("935 Data transfer connection I/O error, closing data connection");
+            } catch (FileNotFoundException fnfe) {
+                System.out.format("910 Access to local file %s denied.", command.getDataArgument());
+            } catch (IOException ioe) {
+                System.out.println("935 Data transfer connection I/O error, closing data connection.");
             }
         }
 
