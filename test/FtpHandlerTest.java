@@ -1,10 +1,10 @@
-import static org.junit.Assert.*;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static org.junit.Assert.fail;
 
 /**
  * Created by Sean on 2016-09-25.
@@ -59,7 +59,7 @@ public class FtpHandlerTest {
     		command = new Command(USER_LKJ);
     		ftpHandler.executeCommand(command);
     		response = ftpHandler.getServerResponseString();
-    		assert(response.substring(0, 3).equals("331"));
+    		assert(response.substring(0, 3).equals("530"));
     		
     		command = new Command(USER_ANONYMOUS);
     		ftpHandler.executeCommand(command);
