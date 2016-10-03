@@ -23,6 +23,10 @@ public class FtpHandler {
 
             serverResponse = getCompleteResponseString();
             System.out.println("<-- " + serverResponse);
+
+            // Set type to binary
+            sendCommandToServer("TYPE I");
+            System.out.println("<-- " + getCompleteResponseString());
         } catch (IOException e) {
             // the socket could not be created
             // TODO timeout on attempt to create connection
