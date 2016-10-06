@@ -161,7 +161,7 @@ public class FtpHandler {
                     }
                 } else if (dataCommand.equals("RETR")) {
                     // This checks if no file to read from
-                    if (getResponseCode(transferResponse).equals("550")) {
+                	if (!fileStatusOK(transferResponse)) {
                     	// exit data connection because no file to read
                     	return;
                     } else {
@@ -185,13 +185,15 @@ public class FtpHandler {
             }
         }
         
+        
         /**
          * 
-         * @param transferResponse Any ftp server response string
-         * @return the first three characters, which are the response code.
+         * @param transferResponse  response from RETR "filename". 
+         * @return  True if can transfer requested file. 
          */
-        private String getResponseCode(String transferResponse) {
-			return transferResponse.substring(0, 3);
+        private boolean fileStatusOK(String transferResponse) {
+        	String code = transferResponse.substring(0, 3);
+			return code.equals("150") || code.equals("125");
 		}
 
 
