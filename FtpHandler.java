@@ -30,7 +30,7 @@ public class FtpHandler {
         } catch (IOException e) {
             // the socket could not be created
             // TODO timeout on attempt to create connection
-            System.out.format("920 Control connection to %s on port %d failed to open", host, port);
+            System.out.format("920 Control connection to %s on port %d failed to open.\n", host, port);
         }
     }
 
@@ -193,6 +193,7 @@ public class FtpHandler {
          */
         private boolean fileStatusOK(String transferResponse) {
         	String code = transferResponse.substring(0, 3);
+        	
 			return code.equals("150") || code.equals("125");
 		}
 
