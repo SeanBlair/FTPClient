@@ -50,7 +50,7 @@ public class CSftp {
 			ftpHandler.closeSocket();
 
 		} catch (IOException exception) {
-			System.err.println("998 Input error while reading commands, terminating.");
+			System.out.println("998 Input error while reading commands, terminating.");
 		}
 	}
 
