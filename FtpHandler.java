@@ -149,22 +149,30 @@ public class FtpHandler {
          */
         public void receiveTransfer(){
             String dataCommand = command.getDataCommand();
-
+            String transferResponse;
             try {
                 sendCommandToServer(command.getFtpDataCommand());
-                System.out.println("<-- " + getCompleteResponseString());
+                transferResponse = getCompleteResponseString();
+                System.out.println("<-- " + transferResponse);
 
                 if (dataCommand.equals("LIST")) {
                     while (dataInFromServer.readLine() != null) {
                         System.out.println(dataInFromServer.readLine());
                     }
                 } else if (dataCommand.equals("RETR")) {
-                    // TODO this while loop hangs if the transfer is forbidden (since there are no chars to read)
-                    FileOutputStream fileOut = new FileOutputStream(command.getDataArgument());
-                    int next;
-                    while ((next = dataInFromServer.read()) != -1) {
-                        fileOut.write(next);
+                    // This checks if no file to read from
+                    if (getResponseCode(transferResponse).equals("550")) {
+                    	// exit data connection because no file to read
+                    	return;
+                    } else {
+                    	FileOutputStream fileOut = new FileOutputStream(command.getDataArgument());
+                        int next;
+                        
+                        while ((next = dataInFromServer.read()) != -1) {
+                            fileOut.write(next);
+                        }
                     }
+                	
                 } else {
                     throw new InvalidCommandException();
                 }
@@ -176,8 +184,19 @@ public class FtpHandler {
                 System.out.println("935 Data transfer connection I/O error, closing data connection.");
             }
         }
-
+        
         /**
+         * 
+         * @param transferResponse Any ftp server response string
+         * @return the first three characters, which are the response code.
+         */
+        private String getResponseCode(String transferResponse) {
+			return transferResponse.substring(0, 3);
+		}
+
+
+
+		/**
          * Close the data connection
          */
         public void closeSocket() throws IOException {
