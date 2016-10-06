@@ -160,24 +160,24 @@ public class FtpHandler {
                         System.out.println(dataInFromServer.readLine());
                     }
                 } else if (dataCommand.equals("RETR")) {
-                    // This checks if no file to read from
-                	if (!fileStatusOK(transferResponse)) {
-                    	// exit data connection because no file to read
-                    	return;
-                    } else {
-                    	FileOutputStream fileOut = new FileOutputStream(command.getDataArgument());
+                    // This checks if exists file to read from
+                	if (fileStatusOK(transferResponse)) {
+                		FileOutputStream fileOut = new FileOutputStream(command.getDataArgument());
                         int next;
                         
                         while ((next = dataInFromServer.read()) != -1) {
                             fileOut.write(next);
                         }
-                    }
-                	
+                	} else {
+                    	// exit data connection because no file to read
+                    	return;
+                	}	
                 } else {
                     throw new InvalidCommandException();
                 }
 
                 System.out.println("<-- " + getCompleteResponseString());
+                
             } catch (FileNotFoundException fnfe) {
                 System.out.format("910 Access to local file %s denied.", command.getDataArgument());
             } catch (IOException ioe) {
