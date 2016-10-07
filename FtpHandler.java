@@ -79,6 +79,9 @@ public class FtpHandler {
         toFtpServer.println(command);
     }
 
+    // TODO if readLine throws IOException, catch and print:
+    // "925 Control connection I/O error, closing control connection."
+    // and exit program.
     private String getCompleteResponseString() throws IOException {
         String serverResponse = null;
         String line = fromFtpServer.readLine();
