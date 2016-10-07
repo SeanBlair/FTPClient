@@ -170,6 +170,12 @@ public class FtpHandler {
                             fileOut.write(next);
                         }
                 	} else {
+                		// here can check for relevant error messages that
+                		// might require specific output by our program.
+                		// note that in all cases the user will see the server response message which might
+                		// be sufficient to indicate possible errors that our program is not required
+                		// to deal with. 
+                		
                     	// exit data connection because no file to read
                     	return;
                 	}	
