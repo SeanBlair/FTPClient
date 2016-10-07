@@ -176,6 +176,7 @@ public class FtpHandler {
                 		// be sufficient to indicate possible errors that our program is not required
                 		// to deal with. 
                 		
+                		System.out.println("935 Data transfer connection I/O error, closing data connection.");
                     	// exit data connection because no file to read
                     	return;
                 	}	
