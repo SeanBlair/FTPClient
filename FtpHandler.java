@@ -30,7 +30,8 @@ public class FtpHandler {
         } catch (IOException e) {
             // the socket could not be created
             // TODO timeout on attempt to create connection
-            System.out.format("920 Control connection to %s on port %d failed to open", host, port);
+            System.out.format("920 Control connection to %s on port %d failed to open.\n", host, port);
+            System.exit(0);
         }
     }
 
@@ -149,35 +150,64 @@ public class FtpHandler {
          */
         public void receiveTransfer(){
             String dataCommand = command.getDataCommand();
-
+            String transferResponse;
             try {
                 sendCommandToServer(command.getFtpDataCommand());
-                System.out.println("<-- " + getCompleteResponseString());
+                transferResponse = getCompleteResponseString();
+                System.out.println("<-- " + transferResponse);
 
                 if (dataCommand.equals("LIST")) {
                     while (dataInFromServer.readLine() != null) {
                         System.out.println(dataInFromServer.readLine());
                     }
                 } else if (dataCommand.equals("RETR")) {
-                    // TODO this while loop hangs if the transfer is forbidden (since there are no chars to read)
-                    FileOutputStream fileOut = new FileOutputStream(command.getDataArgument());
-                    int next;
-                    while ((next = dataInFromServer.read()) != -1) {
-                        fileOut.write(next);
-                    }
+                    // This checks if exists file to read from
+                	if (fileStatusOK(transferResponse)) {
+                		FileOutputStream fileOut = new FileOutputStream(command.getDataArgument());
+                        int next;
+                        
+                        while ((next = dataInFromServer.read()) != -1) {
+                            fileOut.write(next);
+                        }
+                	} else {
+                		// here can check for relevant error messages that
+                		// might require specific output by our program.
+                		// note that in all cases the user will see the server response message which might
+                		// be sufficient to indicate possible errors that our program is not required
+                		// to deal with. 
+                		
+                		System.out.println("935 Data transfer connection I/O error, closing data connection.");
+                    	// exit data connection because no file to read
+                    	return;
+                	}	
                 } else {
                     throw new InvalidCommandException();
                 }
 
                 System.out.println("<-- " + getCompleteResponseString());
+                
             } catch (FileNotFoundException fnfe) {
                 System.out.format("910 Access to local file %s denied.", command.getDataArgument());
             } catch (IOException ioe) {
                 System.out.println("935 Data transfer connection I/O error, closing data connection.");
             }
         }
-
+        
+        
         /**
+         * 
+         * @param transferResponse  response from RETR "filename". 
+         * @return  True if can transfer requested file. 
+         */
+        private boolean fileStatusOK(String transferResponse) {
+        	String code = transferResponse.substring(0, 3);
+        	
+			return code.equals("150") || code.equals("125");
+		}
+
+
+
+		/**
          * Close the data connection
          */
         public void closeSocket() throws IOException {
