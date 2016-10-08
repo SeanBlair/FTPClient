@@ -22,12 +22,12 @@ public class FtpHandler {
             fromFtpServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             socket.setSoTimeout(30000); // 30 second timeout
 
-            serverResponse = getCompleteResponseStringFromControlConnection();
+            serverResponse = getControlConnectionResponse();
             System.out.println("<-- " + serverResponse);
 
             // Set type to binary
             sendCommandToServer("TYPE I");
-            System.out.println("<-- " + getCompleteResponseStringFromControlConnection());
+            System.out.println("<-- " + getControlConnectionResponse());
         } catch (IOException e) {
             // the socket could not be created in 30 seconds
             System.out.format("920 Control connection to %s on port %d failed to open.\n", host, port);
@@ -44,7 +44,7 @@ public class FtpHandler {
             sendCommandToServer(command.getFtpControlCommand());
 
             // handle response from server
-            response = getCompleteResponseStringFromControlConnection();
+            response = getControlConnectionResponse();
             System.out.println("<-- " + response);
             serverResponse = response;
 
@@ -83,7 +83,7 @@ public class FtpHandler {
      * or if readLine() throws exception, print 925 error,
      * close socket and exit program.
      */
-    private String getCompleteResponseStringFromControlConnection() {
+    private String getControlConnectionResponse() {
     	String serverResponse = null;
     	String line = null;
     	
@@ -171,11 +171,7 @@ public class FtpHandler {
             String transferResponse;
             try {
                 sendCommandToServer(command.getFtpDataCommand());
-                transferResponse = getCompleteResponseStringFromDataConnection();
-                if (transferResponse == null) {
-                	// there was an IOException, 935 error printed and connection closed.
-                	return;
-                } else {
+                transferResponse = getControlConnectionResponse();
                 System.out.println("<-- " + transferResponse);
 
                 if (dataCommand.equals("LIST")) {
@@ -200,15 +196,7 @@ public class FtpHandler {
                     throw new InvalidCommandException();
                 }
 
-                transferResponse = getCompleteResponseStringFromDataConnection();
-                if (transferResponse == null) {
-                	// there was an IOException, 935 error printed and connection closed.
-                	return;
-                } else {
-                System.out.println("<-- " + transferResponse);
-                }
-                
-                }
+                System.out.println("<-- " + getControlConnectionResponse());           
                  
             } catch (FileNotFoundException fnfe) {
                 System.out.format("910 Access to local file %s denied.", command.getDataArgument());
@@ -217,39 +205,8 @@ public class FtpHandler {
             }
         }
         
-        
-        /**
-         * 
-         * @return null if readLine() throws exception
-         * after error message is printed, otherwise return
-         * serverResponse message string (single or multi line)
-         */
-        private String getCompleteResponseStringFromDataConnection() {
-        	String serverResponse = null;
-        	String line = null;
-        	
-        	try {
-    			line = fromFtpServer.readLine();
-    			serverResponse = line;
-    			
-    			if (line.substring(3, 4).equals("-")){
-    				String code = line.substring(0, 3) + " ";
-    				do {
-    					line = fromFtpServer.readLine();
-    					serverResponse += line.concat("\n");
-    				}    while (!(line.contains(code)));
-    			}
-    		} catch (IOException e) {
-    			System.out.println("935 Data transfer connection I/O error, closing data connection.");
-    			return null;
-    		}
-        	return serverResponse;
-		}
-
-
 
 		/**
-         * 
          * @param transferResponse  response from RETR "filename". 
          * @return  True if can transfer requested file. 
          */
