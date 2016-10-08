@@ -20,16 +20,16 @@ public class FtpHandler {
             socket = new Socket(host, port);
             toFtpServer = new PrintWriter(socket.getOutputStream(), true);
             fromFtpServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            socket.setSoTimeout(30000); // 30 second timeout
 
-            serverResponse = getCompleteResponseString();
+            serverResponse = getControlConnectionResponse();
             System.out.println("<-- " + serverResponse);
 
             // Set type to binary
             sendCommandToServer("TYPE I");
-            System.out.println("<-- " + getCompleteResponseString());
+            System.out.println("<-- " + getControlConnectionResponse());
         } catch (IOException e) {
-            // the socket could not be created
-            // TODO timeout on attempt to create connection
+            // the socket could not be created in 30 seconds
             System.out.format("920 Control connection to %s on port %d failed to open.\n", host, port);
             System.exit(0);
         }
@@ -44,7 +44,7 @@ public class FtpHandler {
             sendCommandToServer(command.getFtpControlCommand());
 
             // handle response from server
-            response = getCompleteResponseString();
+            response = getControlConnectionResponse();
             System.out.println("<-- " + response);
             serverResponse = response;
 
@@ -63,9 +63,6 @@ public class FtpHandler {
 
     /**
      * This is used by FtpHandlerTest.java for validation.
-     * Maybe should be called getLastServerResponseString()
-     * because there can be other server responses before this one.
-     * for example: dir receives at least two responses, this would get the last one...
      */
     public String getServerResponseString() {
         return serverResponse;
@@ -79,18 +76,39 @@ public class FtpHandler {
         toFtpServer.println(command);
     }
 
-    private String getCompleteResponseString() throws IOException {
-        String serverResponse = null;
-        String line = fromFtpServer.readLine();
-        serverResponse = line;                         // a response always starts with a 3 digit number. if it is followed
-        if (line.substring(3, 4).equals("-")){         // by a dash, it means that there are multiple lines in response
-            String code = line.substring(0, 3) + " ";
-            do {
-                line = fromFtpServer.readLine();
-                serverResponse += line.concat("\n");
-            }    while (!(line.contains(code)));      // the last line starts with the same 3 digits but followed by a space
-        }
-        return serverResponse;
+    
+    /**
+     * 
+     * @return serverResponse message string (single or multi line)
+     * or if readLine() throws exception, print 925 error,
+     * close socket and exit program.
+     */
+    private String getControlConnectionResponse() {
+    	String serverResponse = null;
+    	String line = null;
+    	
+    	try {
+			line = fromFtpServer.readLine();
+			serverResponse = line;
+			
+			if (line.substring(3, 4).equals("-")){
+				String code = line.substring(0, 3) + " ";
+				do {
+					line = fromFtpServer.readLine();
+					serverResponse += line.concat("\n");
+				}    while (!(line.contains(code)));
+			}
+			
+		} catch (IOException e) {
+			System.out.println("925 Control connection I/O error, closing control connection.");
+			try {
+				closeSocket();
+			} catch (IOException e1) {
+				// ignore because exiting program next.
+			}
+            System.exit(0);
+		}	
+    	return serverResponse;
     }
 
     public void closeSocket() throws IOException {
@@ -153,7 +171,7 @@ public class FtpHandler {
             String transferResponse;
             try {
                 sendCommandToServer(command.getFtpDataCommand());
-                transferResponse = getCompleteResponseString();
+                transferResponse = getControlConnectionResponse();
                 System.out.println("<-- " + transferResponse);
 
                 if (dataCommand.equals("LIST")) {
@@ -169,13 +187,7 @@ public class FtpHandler {
                         while ((next = dataInFromServer.read()) != -1) {
                             fileOut.write(next);
                         }
-                	} else {
-                		// here can check for relevant error messages that
-                		// might require specific output by our program.
-                		// note that in all cases the user will see the server response message which might
-                		// be sufficient to indicate possible errors that our program is not required
-                		// to deal with. 
-                		
+                	} else {	
                 		System.out.println("935 Data transfer connection I/O error, closing data connection.");
                     	// exit data connection because no file to read
                     	return;
@@ -184,8 +196,8 @@ public class FtpHandler {
                     throw new InvalidCommandException();
                 }
 
-                System.out.println("<-- " + getCompleteResponseString());
-                
+                System.out.println("<-- " + getControlConnectionResponse());           
+                 
             } catch (FileNotFoundException fnfe) {
                 System.out.format("910 Access to local file %s denied.", command.getDataArgument());
             } catch (IOException ioe) {
@@ -193,9 +205,8 @@ public class FtpHandler {
             }
         }
         
-        
-        /**
-         * 
+
+		/**
          * @param transferResponse  response from RETR "filename". 
          * @return  True if can transfer requested file. 
          */
