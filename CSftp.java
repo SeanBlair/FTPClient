@@ -51,7 +51,7 @@ public class CSftp {
 			ftpHandler.closeSocket();
 
 		} catch (NumberFormatException nfe) {
-			System.out.println("998 Input error while reading commands, terminating.");
+			System.out.println("999 Processing error. Port must be an integer.");
 		} catch (IOException exception) {
 			System.out.println("998 Input error while reading commands, terminating.");
 		}
