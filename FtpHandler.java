@@ -73,7 +73,8 @@ public class FtpHandler {
      */
     private void sendCommandToServer(String command) {
         System.out.println("--> " + command);
-        toFtpServer.println(command);
+        toFtpServer.print(command + "\r\n");
+        toFtpServer.flush();
     }
 
     
