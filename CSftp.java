@@ -21,10 +21,9 @@ public class CSftp {
 			return;
 		}
 
-		String hostName = args[0];
-		int portNumber = Integer.parseInt(args[1]);
-
 		try {
+			String hostName = args[0];
+			int portNumber = Integer.parseInt(args[1]);
 			FtpHandler ftpHandler = new FtpHandler(hostName, portNumber);
 
 			for (int len = 1; len > 0; ) {
@@ -51,6 +50,8 @@ public class CSftp {
 
 			ftpHandler.closeSocket();
 
+		} catch (NumberFormatException nfe) {
+			System.out.println("998 Input error while reading commands, terminating.");
 		} catch (IOException exception) {
 			System.out.println("998 Input error while reading commands, terminating.");
 		}
