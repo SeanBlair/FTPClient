@@ -66,8 +66,8 @@ public class FtpHandler {
     }
 
     /**
-     * This is used by FtpHandlerTest.java for validation.
-     * @return the server's response string
+     * This is used for testing only.
+     * @return the server's last response string
      */
     public String getServerResponseString() {
         return serverResponse;
@@ -209,7 +209,7 @@ public class FtpHandler {
                 System.out.println("<-- " + getControlConnectionResponse());           
                  
             } catch (FileNotFoundException fnfe) {
-                System.out.format("910 Access to local file %s denied.", command.getDataArgument());
+                System.out.format("910 Access to local file %s denied.\n", command.getDataArgument());
             } catch (IOException ioe) {
                 System.out.println("935 Data transfer connection I/O error, closing data connection.");
             }
