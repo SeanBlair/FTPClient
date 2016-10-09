@@ -149,7 +149,7 @@ public class FtpHandler {
                 dataSocket.setSoTimeout(30000); // 30 second timeout
             } catch (IOException e) {
                 // the socket could not be created or timed out
-                System.out.format("930 Data transfer connection to %s on port %d failed to open", dataIP, dataPort);
+                System.out.format("930 Data transfer connection to %s on port %d failed to open.\n", dataIP, dataPort);
             }
         }
 
