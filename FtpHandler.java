@@ -35,7 +35,9 @@ public class FtpHandler {
         }
     }
 
-
+    /**
+     * Executes the command by sending it to the server, and prints response; opens a data connection if necessary.
+     */
     public void executeCommand(Command command) throws IOException, ProcessingException {
         String response;
 
@@ -49,7 +51,6 @@ public class FtpHandler {
             serverResponse = response;
 
             if (command.isDataConnection()) {
-                // TODO ensure that server responds positively to data connection request
                 DataConnection dataConnection = new DataConnection(response, command);
                 dataConnection.receiveTransfer();
                 dataConnection.closeSocket();
@@ -208,6 +209,7 @@ public class FtpHandler {
         
 
 		/**
+         * Return true if the file was accessible and will be transferred via the data connection
          * @param transferResponse  response from RETR "filename". 
          * @return  True if can transfer requested file. 
          */
@@ -216,8 +218,6 @@ public class FtpHandler {
         	
 			return code.equals("150") || code.equals("125");
 		}
-
-
 
 		/**
          * Close the data connection

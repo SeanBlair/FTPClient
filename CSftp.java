@@ -35,7 +35,9 @@ public class CSftp {
 				}
 
 				try {
+					// parse the user input
 					Command userCommand = new Command(cmdString);
+					// communicate with the FTP server
 					ftpHandler.executeCommand(userCommand);
 
 				} catch (WrongNumberOfArgumentsException wae) {
