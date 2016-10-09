@@ -35,8 +35,10 @@ public class Command {
     }
 
     /**
-     * Given an array of characters from the command line, read as a String,
+     Given an array of characters from the command line, read as a String,
      * trim leading and trailing white space, and cast to lower case
+     * @param byteArray the user's input
+     * @return a string of the user's input in lower case with white space trimmed off
      */
     private String parseByteArray(byte[] byteArray) {
         StringBuffer buffer = new StringBuffer();
@@ -59,6 +61,7 @@ public class Command {
 
     /**
      * Split command into an array of Strings and trim each part
+     * @return the array containing each word input by the user
      */
     public String[] splitUserInput() {
         String[] commandParts = trimmedUserInput.split("\\s+");
@@ -71,6 +74,7 @@ public class Command {
 
     /**
      * Given an array of Strings of user input, set the FTP command and the argument
+     * @param commandArray the array containing each word input by the user
      */
     public void setCommandAndArgument(String[] commandArray) throws InvalidCommandException {
         parseAndSetCommand(commandArray[0]);
@@ -123,9 +127,11 @@ public class Command {
 
     /**
      * Removes tabs and leading/trailing whitespace from the given string
+     * @param str the String to be trimmed
+     * @return the trimmed string
      */
-    private String trimAll(String string) {
-        return string.replaceAll("\t", "").trim();
+    private String trimAll(String str) {
+        return str.replaceAll("\t", "").trim();
     }
 
     /**

@@ -37,6 +37,9 @@ public class FtpHandler {
 
     /**
      * Executes the command by sending it to the server, and prints response; opens a data connection if necessary.
+     * @param command the Command object that contains data about what to send to the server
+     * @throws IOException if there was a problem communicating with the server
+     * @throws ProcessingException if the command required a data connection, the creation of which failed
      */
     public void executeCommand(Command command) throws IOException, ProcessingException {
         String response;
@@ -64,6 +67,7 @@ public class FtpHandler {
 
     /**
      * This is used by FtpHandlerTest.java for validation.
+     * @return the server's response string
      */
     public String getServerResponseString() {
         return serverResponse;
@@ -71,6 +75,7 @@ public class FtpHandler {
 
     /**
      * Send a command to the server via the control connection
+     * @param command the string representing the full command (plus args if required) to be sent to the server
      */
     private void sendCommandToServer(String command) {
         System.out.println("--> " + command);
@@ -80,10 +85,8 @@ public class FtpHandler {
 
     
     /**
-     * 
+     * Get the full response from the server after sending a command; could be single or multi-line
      * @return serverResponse message string (single or multi line)
-     * or if readLine() throws exception, print 925 error,
-     * close socket and exit program.
      */
     private String getControlConnectionResponse() {
     	String serverResponse = null;
@@ -113,6 +116,10 @@ public class FtpHandler {
     	return serverResponse;
     }
 
+    /**
+     * Close the control connection
+     * @throws IOException if there was a problem closing the socket
+     */
     public void closeSocket() throws IOException {
         socket.close();
     }
@@ -149,8 +156,9 @@ public class FtpHandler {
 
 
         /**
-         * Parse out the IP and port for the data connection
+         * Parse out the IP and port for the data connection from the server's response
          * @param dataResponse the full response string from the server
+         * @throws ProcessingException if the regex patterns for IP and port could not be matched in the server response
          */
         private void parseResponse(String dataResponse) throws ProcessingException {
             Pattern pattern = Pattern.compile("(\\d{1,3},){5}\\d{1,3}");
@@ -166,7 +174,7 @@ public class FtpHandler {
         }
 
         /**
-         * Receive either the directory listings, or a file transfer
+         * Receive either the directory listings, or a file transfer, via the data connection
          */
         public void receiveTransfer(){
             String dataCommand = command.getDataCommand();
@@ -221,6 +229,7 @@ public class FtpHandler {
 
 		/**
          * Close the data connection
+         * @throws IOException if there was a problem closing the data socket
          */
         public void closeSocket() throws IOException {
             dataSocket.close();
