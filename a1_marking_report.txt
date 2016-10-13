@@ -1,11 +1,10 @@
-Total before late penalty: [/61]
-
+Total before late penalty: [/65]
 
 NOTE: in the marking report something left blank (e.g.  [ /6]) typically means
 that you got full marks for that item. 
 
 
-CLIENT - FUNCTIONALITY: [/36]
+CLIENT - FUNCTIONALITY: [/39]
 
 Working makefile produces the CSftp.jar file 		[/2]
   
@@ -16,23 +15,27 @@ Command Argument processing                             [/4]
     - Reports usage error if too many or too few arguments
     - If control connection fails to open reports error 920
 
-User command                                           [/4]
+user command                                           [/3]
      - reports error 901 if too many or too few parameters
      - Sends USER command to server
-     - Process response 
-     - Properly handles rejected request
+     - Processes response 
+
+pw command                                             [/3]
+     - reports error 901 if too many or too few parameters
+     - Sends PASS command to server
+     - Processes response 
      
 
-Quit command                                          [/2]
+quit command                                          [/2]
      - Sends QUIT on the control connection.
      - Exits, ideally closing connections first
 
-Cd command                                            [/3]
+cd command                                            [/3]
      - reports error 901 if too many or too few parameters
      - sends CWD command 
      - processes the response
 
-Get command                                           [/9]
+get command                                           [/9]
     - command rejected with 901 error if improper number of arguments
     - Sends PASV and opens connection specified in response
     - System designed to enusre server is in binary mode
@@ -60,7 +63,12 @@ Format of output conforms to that specified in assignment    [/4]
      command, get and put do not print what is sent or 
      received on the data connection. 
 
-Parameters: properly handles multiple spaces or tabs    [/3]
+Error processing                                        [/2]
+   - handles unexpected closure of control connection
+   - handles unexpected EOF when reading command lines
+
+
+Parameters: properly handles multiple spaces or tabs    [/2]
 
 ---------------------------------------
 Interaction with other FTP servers: [/16]
