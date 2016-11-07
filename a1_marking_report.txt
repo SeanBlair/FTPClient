@@ -1,10 +1,10 @@
-Total before late penalty: [/64]
+Total before late penalty: [61/64]
 
 NOTE: in the marking report something left blank (e.g.  [ /6]) typically means
 that you got full marks for that item. 
 
 
-CLIENT - FUNCTIONALITY: [/39]
+CLIENT - FUNCTIONALITY: [38/39]
 
 Working makefile produces the CSftp.jar file 		[/2]
   
@@ -48,7 +48,7 @@ get command                                           [/9]
     - actual transfer of file data
     - binary files are properly transferred
 
-dir command                                           [/5]
+dir command                                           [4/5]
     - Sends PASV and opens connection specified in response
     - Can handle error response or connection failure
     - Sends LIST and can deal with  (2)
@@ -56,6 +56,8 @@ dir command                                           [/5]
       	(should close the data connection)
       - unexpected closure of data channel
     - actual transfer of directory listing is correct
+      marker: directory listing is partial. The client omits some of
+      the folders.
 
 Format of output conforms to that specified in assignment    [/4]
    - in particular lines are identified with --> and <--
@@ -71,28 +73,35 @@ Error processing                                        [/2]
 Parameters: properly handles multiple spaces or tabs    [/2]
 
 ---------------------------------------
-Interaction with other FTP servers: [/16]
+Interaction with other FTP servers: [14/16]
 
 
-Interaction with ftp.dell.com                [/8]
+Interaction with ftp.dell.com                [7/8]
 
       - login/password                 [ /2] 
       - dir                            [ /1]
       - cd into directory fixes        [ /1] 
-      - retrieve file viewmtr.exe      [ /2]
+      - retrieve file viewmtr.exe      [1/2]
         (note assignment requires all file
          transfers to be in binary mode) 
+        marker: does not transfer data in binary format. "TYPE I" is set
+        early in the login process, not with "get" command. Dell ftp
+        ignores "TYPE I" command before login.
        
         9e0ebe14d9710625f503681872b719bbcd9a7cf075779da5eaa03f6c6d3ae9bd *viewmtr.exe
       - cd .. followed by dir           [ /1] 
       - quit                            [ /1]
 
 
-Interaction with ftp.cisco.com              [ /8]
+Interaction with ftp.cisco.com              [7/8]
     - anonymous login/password      [ /2]
     - dir                           [ /1]
     - cd into pub/mibs/traps        [ /1]
-    - get traps.tar.gz              [ /2]
+    - get traps.tar.gz              [1/2]
+      marker: does not transfer data in binary format. "TYPE I" is set
+      early in the login process, not with "get" command. Cisco ftp
+      ignores "TYPE I" command before login.
+
       sha256  value is 6a88876bf625fec5ec2e2d0b1d0aadd1249e95e3317cb4521ea31e8aae757fd4 *traps.tar.gz
     - wait 60 seconds and quit      [ /2]
 
@@ -104,12 +113,19 @@ this marking criteria
      Code Documentation [/3]
      Code Quality       [/3]
 
+Overall, code is thoughtful, well-documented and fairly readable. In
+partular, I liked your high-level comments for functions and their
+input/outut parameters. 
 
+A slight improvement I'd suggest is to keep line length less than 80
+characters (which was already mentioned on the assignment text). It
+makes grading on the department machines hard and also reduces
+readablity in general.
    
 
 MARKER'S ADDITIONAL COMMENTS:
 
-
+Well done!
 
 
 ----------- Non Functional Criteria
