@@ -44,7 +44,7 @@ dir
 
 quit
 
-Note your two transferred files: welcome.msg and malloc.tar.gz
+Note your two freshly transferred files: welcome.msg and malloc.tar.gz     
 
 :)
 
